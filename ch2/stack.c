@@ -1,11 +1,14 @@
 #include <stdlib.h>
 #include <stddef.h>
+#include <time.h>
+#include <stdint.h>
+#include "stack.h"
 #include "assert.h"
 #include "mem.h"
-#include "stack.h"
-#include <time.h>
 
 #define T Stack_T
+#define isPtrAligned(ptr, byte_count) (((uintptr_t)(ptr)) % (byte_count))
+#define isBadPtr(ptr) ((ptr == NULL) || (isPtrAligned(ptr, 8)))
 
 struct T {
 	int count;
@@ -33,7 +36,7 @@ T Stack_new(void) {
 }
 
 int Stack_empty(T stk) {
-	assert(stk);
+	assert(!isBadPtr(stk));
 	assert(stk->canary == saved_canary);
 	return stk->count == 0;
 }
@@ -41,7 +44,7 @@ int Stack_empty(T stk) {
 void Stack_push(T stk, void *x) {
 	struct elem *t;
 
-	assert(stk);
+	assert(!isBadPtr(stk));
 	assert(stk->canary == saved_canary);
 	NEW(t);
 	t->x = x;
@@ -54,7 +57,7 @@ void *Stack_pop(T stk) {
 	void *x;
 	struct elem *t;
 
-	assert(stk);
+	assert(!isBadPtr(stk));
 	assert(stk->count > 0);
 	assert(stk->canary == saved_canary);
 	t = stk->head;
