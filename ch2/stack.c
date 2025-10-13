@@ -1,7 +1,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "assert.h"
-#include "mem.h"
+//#include "mem.h"
 #include "stack.h"
 
 #define T Stack_T
@@ -10,6 +10,7 @@
 
 struct T {
 	unsigned count;
+	unsigned maxsize;
 	struct elem {
 		void *x;
 		struct elem *link;
@@ -17,11 +18,12 @@ struct T {
 	unsigned magic;
 };
 
-T Stack_new(void) {
+T Stack_new(unsigned maxsize) {
 	T stk;
 
 	NEW(stk);
 	stk->count = 0;
+	stk->maxsize = maxsize;
 	stk->head = NULL;
 	stk->magic = MAGIC_VALUE;
 	return stk;
@@ -36,6 +38,7 @@ void Stack_push(T stk, void *x) {
 	struct elem *t;
 
 	assert(!isBadPtr(stk));
+	assert(stk->maxsize - stk->count != 0);
 	NEW(t);
 	t->x = x;
 	t->link = stk->head;

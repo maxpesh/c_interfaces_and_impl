@@ -4,7 +4,7 @@
 #define T Stack_T
 typedef struct T *T;
 
-extern T Stack_new(void);
+extern T Stack_new(unsigned maxsize);
 extern int Stack_empty(T stk);
 extern void Stack_push(T stk, void *x);
 extern void *Stack_pop(T stk);
