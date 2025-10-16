@@ -10,6 +10,7 @@
 static struct atom {
 	struct atom *link;
 	size_t len;
+	unsigned long hash;
 	char str[];
 } *buckets[2048];
 static unsigned long scatter[] = {
@@ -83,23 +84,21 @@ const char *Atom_int(long n) {
 }
 
 const char *Atom_new(const char *str, size_t len) {
-	unsigned long h;
+	unsigned long h, hash;
 	size_t i;
 	struct atom *p;
 
 	assert(str);
-	for (h = 0, i = 0; i < len; i++)
-		h = (h<<1) + scatter[(unsigned char)str[i]];
-	h &= NELEMS(buckets)-1;
-	for (p = buckets[h]; p; p = p->link)
-		if (len == p->len) {
-			for (i = 0; i < len && p->str[i] == str[i]; )
-				i++;
-			if (i == len)
-				return p->str;
-		}
+	for (hash = 0, i = 0; i < len; i++)
+		hash = (hash<<1) + scatter[(unsigned char)str[i]];
+	h = hash & NELEMS(buckets)-1;
+	for (p = buckets[h]; p; p = p->link) {
+		if (hash == p->hash)
+			return p->str;
+	}
 	p = ALLOC(sizeof (*p) + len + 1);
 	p->len = len;
+	p->hash = hash;
 	if (len > 0)
 		memcpy(p->str, str, len);
 	p->str[len] = '\0';
@@ -113,10 +112,12 @@ size_t Atom_length(const char *str) {
 	size_t i;
 
 	assert(str);
-	for (i = 0; i < NELEMS(buckets); i++)
-		for (p = buckets[i]; p; p = p->link)
+	for (i = 0; i < NELEMS(buckets); i++) {
+		for (p = buckets[i]; p; p = p->link) {
 			if (p->str == str)
 				return p->len;
+		}
+	}
 	assert(0);
 	return 0;
 }
