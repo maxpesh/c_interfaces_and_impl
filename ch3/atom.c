@@ -10,7 +10,7 @@
 static struct atom {
 	struct atom *link;
 	size_t len;
-	char *str;
+	char str[];
 } *buckets[2048];
 static unsigned long scatter[] = {
     2078917053, 143302914, 1027100827, 1953210302, 755253631, 2002600785,
@@ -100,7 +100,6 @@ const char *Atom_new(const char *str, size_t len) {
 		}
 	p = ALLOC(sizeof (*p) + len + 1);
 	p->len = len;
-	p->str = (char *)(p + 1);
 	if (len > 0)
 		memcpy(p->str, str, len);
 	p->str[len] = '\0';
