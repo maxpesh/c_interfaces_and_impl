@@ -109,15 +109,19 @@ const char *Atom_new(const char *str, size_t len) {
 
 size_t Atom_length(const char *str) {
 	struct atom *p;
+	size_t len;
+	unsigned long h, hash;
 	size_t i;
 
 	assert(str);
-	for (i = 0; i < NELEMS(buckets); i++) {
-		for (p = buckets[i]; p; p = p->link) {
-			if (p->str == str)
-				return p->len;
-		}
-	}
+	len = strlen(str);
+	for (hash = 0, i = 0; i < len; i++)
+                hash = (hash<<1) + scatter[(unsigned char)str[i]];
+        h = hash & NELEMS(buckets)-1;
+        for (p = buckets[h]; p; p = p->link) {
+                if (hash == p->hash)
+                        return p->len;
+        }
 	assert(0);
 	return 0;
 }
